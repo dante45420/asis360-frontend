@@ -4,12 +4,57 @@ import { Box, Typography, Grid, Card, CardContent, CircularProgress, Alert, Pape
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import StorefrontIcon from '@mui/icons-material/Storefront'; // <-- ÍCONO AÑADIDO
 import portalService from '../../../services/portalService';
 import DetalleProductoModal from './DetalleProductoModal';
 import SolicitarProductoModal from './SolicitarProductoModal';
 
+// --- NUEVO COMPONENTE PARA LA TARJETA DE PRODUCTO ---
+const ProductoCard = ({ producto, onClick }) => {
+    const formatPrice = (prod) => {
+        const min = prod.precioMin.toLocaleString('es-CL');
+        const max = prod.precioMax.toLocaleString('es-CL');
+        if (prod.precioMin === prod.precioMax) return `$${min}`;
+        return `$${min} - $${max}`;
+    };
+
+    return (
+        <Card
+            elevation={1}
+            sx={{ 
+                height: '100%', 
+                display: 'flex', 
+                flexDirection: 'column',
+                borderRadius: 3,
+                transition: 'box-shadow 0.3s',
+                '&:hover': {
+                    boxShadow: 3
+                }
+            }}
+        >
+            <CardActionArea onClick={onClick} sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+                <CardContent sx={{ flexGrow: 1, width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                    <Box>
+                        <Typography gutterBottom variant="h6" component="div" sx={{ fontSize: '1.1rem', fontWeight: 'bold' }}>
+                            {producto.nombre}
+                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary', mb: 1 }}>
+                            <StorefrontIcon fontSize="small" sx={{ mr: 0.5 }} />
+                            <Typography variant="body2">{producto.proveedor}</Typography>
+                        </Box>
+                    </Box>
+                    <Typography variant="h6" sx={{ mt: 2, fontWeight: 'bold', color: 'primary.main', alignSelf: 'flex-end' }}>
+                        {formatPrice(producto)}
+                    </Typography>
+                </CardContent>
+            </CardActionArea>
+        </Card>
+    );
+};
+
+
 const CrearPedidoView = ({ onAddToCart, setSnackbar }) => {
-    // --- LÓGICA EXISTENTE ---
+    // --- LÓGICA EXISTENTE (SIN CAMBIOS) ---
     const [categorias, setCategorias] = useState([]);
     const [productos, setProductos] = useState([]);
     const [selectedCategoria, setSelectedCategoria] = useState('');
@@ -19,8 +64,6 @@ const CrearPedidoView = ({ onAddToCart, setSnackbar }) => {
     const [isSolicitarModalOpen, setSolicitarModalOpen] = useState(false);
     const [selectedProductoId, setSelectedProductoId] = useState(null);
     const [infoAnchorEl, setInfoAnchorEl] = useState(null);
-    
-    // --- NUEVA LÓGICA PARA EL MENÚ DE CATEGORÍAS ---
     const [categoryMenuAnchor, setCategoryMenuAnchor] = useState(null);
     const isCategoryMenuOpen = Boolean(categoryMenuAnchor);
 
@@ -31,12 +74,10 @@ const CrearPedidoView = ({ onAddToCart, setSnackbar }) => {
         handleCategoryMenuClose();
     };
 
-
     const handleInfoClick = (event) => setInfoAnchorEl(event.currentTarget);
     const handleInfoClose = () => setInfoAnchorEl(null);
     const openInfo = Boolean(infoAnchorEl);
 
-    // ... (El resto de las funciones se mantienen igual) ...
     const fetchCategorias = useCallback(async () => {
         setLoading(prev => ({ ...prev, categorias: true }));
         try { const data = await portalService.getCategorias(); setCategorias(data); } 
@@ -64,13 +105,7 @@ const CrearPedidoView = ({ onAddToCart, setSnackbar }) => {
             setSolicitarModalOpen(false);
         } catch (err) { setSnackbar({ open: true, message: err.response?.data?.message || 'Error al enviar la solicitud.' }); }
     };
-    const formatPrice = (producto) => {
-        const min = producto.precioMin.toLocaleString('es-CL');
-        const max = producto.precioMax.toLocaleString('es-CL');
-        if (producto.precioMin === producto.precioMax) return `$${min}`;
-        return `$${min} - $${max}`;
-    };
-
+    
     return (
         <>
             <Paper sx={{ p: 3, mb: 3 }}>
@@ -128,18 +163,10 @@ const CrearPedidoView = ({ onAddToCart, setSnackbar }) => {
                     <Typography color="text.secondary" sx={{mb: 2}}>Haz clic en un producto para ver sus detalles y añadirlo a tu pedido. El rango de precio puede ser por variaciones en el producto o descuentos por cantidad comprada.</Typography>
                     {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
                     {loading.productos ? <Box sx={{display: 'flex', justifyContent: 'center', my: 4}}><CircularProgress /></Box> : (
-                        <Grid container spacing={2}>
+                        <Grid container spacing={3} justifyContent="center">
                             {productos.length > 0 ? productos.map(producto => (
                                 <Grid item xs={12} sm={6} md={4} key={producto.id}>
-                                    <CardActionArea component="div" onClick={() => handleOpenDetalle(producto.id)} sx={{height: '100%', borderRadius: 2}}>
-                                        <Card sx={{height: '100%'}}>
-                                            <CardContent>
-                                                <Typography gutterBottom variant="h6" component="div" sx={{fontSize: '1.1rem'}}>{producto.nombre}</Typography>
-                                                <Typography variant="body2" color="text.secondary">Vendido por: {producto.proveedor}</Typography>
-                                                <Typography variant="h6" sx={{mt: 1, fontWeight: 'bold'}}>{formatPrice(producto)}</Typography>
-                                            </CardContent>
-                                        </Card>
-                                    </CardActionArea>
+                                    <ProductoCard producto={producto} onClick={() => handleOpenDetalle(producto.id)} />
                                 </Grid>
                             )) : <Grid item xs={12}><Typography sx={{textAlign: 'center', mt: 4, fontStyle: 'italic'}}>No hay productos disponibles en esta categoría.</Typography></Grid>}
                         </Grid>
