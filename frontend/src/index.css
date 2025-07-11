@@ -1,0 +1,34 @@
+/* src/index.css */
+body {
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* Separador de secciones genérico */
+.section-divider {
+  width: 90%;
+  max-width: 1200px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #e0e0e0, transparent);
+  margin: 4rem auto;
+  border: none;
+}
+
+/* Animaciones suaves */
+.smooth-transition {
+  transition: all 0.2s ease-in-out;
+}
+
+.hover-lift {
+  transition: all 0.2s ease-in-out;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
